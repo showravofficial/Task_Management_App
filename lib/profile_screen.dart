@@ -28,7 +28,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         userProfile = jsonDecode(response.body)['data'];
       });
     } else {
-      // Handle error
+      // If the API fails, show dummy data
+      setState(() {
+        userProfile = {
+          'firstName': 'John',
+          'lastName': 'Doe',
+          'email': 'john.doe@example.com',
+          'address': '123 Main St, Anytown, USA',
+        };
+      });
     }
   }
 
@@ -41,26 +49,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Profile')),
+      appBar: AppBar(
+        title: Text('Profile'),
+        backgroundColor: Color(0xFF2196F3), // Change the background color
+        centerTitle: true,
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
-        child: userProfile.isNotEmpty
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('First Name: ${userProfile['firstName']}'),
-                  Text('Last Name: ${userProfile['lastName']}'),
-                  Text('Email: ${userProfile['email']}'),
-                  Text('Address: ${userProfile['address']}'),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/update-profile');
-                    },
-                    child: Text('Update Profile'),
+        child: SingleChildScrollView( // Add SingleChildScrollView to make the content scrollable
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage('https://static.vecteezy.com/system/resources/previews/002/002/403/non_2x/man-with-beard-avatar-character-isolated-icon-free-vector.jpg'), // Replace with actual profile image URL
+                ),
+              ),
+              SizedBox(height: 20),
+              Text('First Name:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(userProfile['firstName'] ?? "John", style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Text('Last Name:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(userProfile['lastName'] ?? "Doe", style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Text('Email:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(userProfile['email']?? "john.doe@example.com", style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Text('Address:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(userProfile['address']?? "123 Main St, Anytown, USA", style: TextStyle(fontSize: 16)),
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/update-profile');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2196F3),
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    textStyle: TextStyle(fontSize: 16),
                   ),
-                ],
-              )
-            : Center(child: CircularProgressIndicator()),
+                  child: Text('Update Profile'),
+                ),
+              ),
+            ],
+          ),
+        )
+            // : Center(child: CircularProgressIndicator()),
       ),
     );
   }

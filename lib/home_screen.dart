@@ -9,14 +9,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List tasks = [];
+  List tasks = List.generate(
+    10,
+        (index) => {
+      '_id': '$index',
+      'title': 'Task ${index + 1}',
+      'description': 'This is the description for Task ${index + 1}',
+    },
+  );
   String? token;
 
   Future<void> fetchTasks() async {
-    if (token == null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      token = prefs.getString('token');
-    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    token = prefs.getString('token');
 
     final response = await http.get(
       Uri.parse('http://139.59.65.225:8052/task/get-all-task'),
@@ -32,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } else {
       print('Failed to fetch tasks: ${response.statusCode}');
+      // Retain the initial dummy data if the API fails
     }
   }
 
@@ -63,34 +69,70 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: tasks.isEmpty
-          ? Center(child: Text('No tasks available'))
-          : ListView.builder(
+      body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(tasks[index]['title']),
-            subtitle: Text(tasks[index]['description']),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                String? token = prefs.getString('token');
+          return Card(
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tasks[index]['title'],
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    tasks[index]['description'],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                        String? token = prefs.getString('token');
 
-                final response = await http.delete(
-                  Uri.parse('http://139.59.65.225:8052/delete-task/${tasks[index]['_id']}'),
-                  headers: <String, String>{
-                    'Content-Type': 'application/json; charset=UTF-8',
-                    'Authorization': 'Bearer $token',
-                  },
-                );
+                        final response = await http.delete(
+                          Uri.parse(
+                              'http://139.59.65.225:8052/delete-task/${tasks[index]['_id']}'),
+                          headers: <String, String>{
+                            'Content-Type': 'application/json; charset=UTF-8',
+                            'Authorization': 'Bearer $token',
+                          },
+                        );
 
-                if (response.statusCode == 200) {
-                  fetchTasks();
-                } else {
-                  print('Failed to delete task: ${response.statusCode}');
-                }
-              },
+                        if (response.statusCode == 200) {
+                          fetchTasks();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Task deleted successfully')),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to delete task')),
+                          );
+                          print('Failed to delete task: ${response.statusCode}');
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -100,8 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              final TextEditingController titleController = TextEditingController();
-              final TextEditingController descriptionController = TextEditingController();
+              final TextEditingController titleController =
+              TextEditingController();
+              final TextEditingController descriptionController =
+              TextEditingController();
 
               return AlertDialog(
                 title: Text('Create Task'),
@@ -127,11 +171,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
                       String? token = prefs.getString('token');
 
                       final response = await http.post(
-                        Uri.parse('http://139.59.65.225:8052/task/create-task'),
+                        Uri.parse(
+                            'http://139.59.65.225:8052/task/create-task'),
                         headers: <String, String>{
                           'Content-Type': 'application/json; charset=UTF-8',
                           'Authorization': 'Bearer $token',

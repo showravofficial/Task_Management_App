@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
@@ -16,7 +17,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  XFile? _image; // Use XFile instead of PickedFile
+  XFile? _image;
 
   // Error tracking variables
   String? firstNameError;
@@ -25,7 +26,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String? passwordError;
   String? addressError;
 
-  bool _isPasswordVisible = false; // To toggle the password visibility
+  bool _isPasswordVisible = false;
 
   Future<void> register() async {
     // Reset previous error messages
@@ -87,21 +88,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     request.fields['address'] = addressController.text;
 
     if (_image != null) {
-      // Convert XFile to File and send it as multipart
       request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
     }
 
     try {
-      // Send the request
       final response = await request.send();
       final responseString = await response.stream.bytesToString();
       final responseData = json.decode(responseString);
 
-      print("Response Status: ${response.statusCode}");
-      print("Response Data: $responseData");
-
       if (response.statusCode == 200) {
-        // Show success pop-up
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -110,9 +105,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // Close the dialog
-                  clearFields(); // Clear fields after success
-                  Navigator.pushReplacementNamed(context, '/login'); // Navigate to login
+                  Navigator.pop(context);
+                  clearFields();
+                  Navigator.pushReplacementNamed(context, '/login');
                 },
                 child: Text('OK'),
               ),
@@ -120,9 +115,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         );
       } else {
-        // Show error pop-up if registration fails
         final errorMessage = responseData['message'] ?? 'Registration failed';
-
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -131,7 +124,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // Close the dialog
+                  Navigator.pop(context);
                 },
                 child: Text('OK'),
               ),
@@ -140,8 +133,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
       }
     } catch (e) {
-      print('Error: $e');
-      // Show error pop-up in case of exception
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -150,7 +141,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('OK'),
             ),
@@ -179,74 +170,77 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register')),
+      appBar: AppBar(
+        title: Text('Register'),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // First Name
-              TextField(
+              Text(
+                'Create an Account',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+              SizedBox(height: 20),
+              _buildTextField(
                 controller: firstNameController,
-                decoration: InputDecoration(
-                  labelText: 'First Name',
-                  errorText: firstNameError,
-                ),
+                label: 'First Name',
+                errorText: firstNameError,
               ),
-              // Last Name
-              TextField(
+              _buildTextField(
                 controller: lastNameController,
-                decoration: InputDecoration(
-                  labelText: 'Last Name',
-                  errorText: lastNameError,
-                ),
+                label: 'Last Name',
+                errorText: lastNameError,
               ),
-              // Email
-              TextField(
+              _buildTextField(
                 controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  errorText: emailError,
-                ),
+                label: 'Email',
+                errorText: emailError,
               ),
-              // Password
-              TextField(
+              _buildTextField(
                 controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  errorText: passwordError,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
-                ),
+                label: 'Password',
+                errorText: passwordError,
                 obscureText: !_isPasswordVisible,
-              ),
-              // Address
-              TextField(
-                controller: addressController,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  errorText: addressError,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
                 ),
+              ),
+              _buildTextField(
+                controller: addressController,
+                label: 'Address',
+                errorText: addressError,
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  final pickedFile = await _picker.pickImage(source: ImageSource.gallery); // Use pickImage
+                  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
                   setState(() {
                     _image = pickedFile;
                   });
                 },
-                child: Text('Pick Image'),
+                child: Text('Pick Image',style: GoogleFonts.lato(fontSize: 18, color: Colors.white),),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
               ),
               SizedBox(height: 10),
               if (_image != null) ...[
@@ -256,11 +250,45 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: register,
-                child: Text('Register'),
+                child: Text('Register',style: GoogleFonts.lato(fontSize: 18, color: Colors.white),),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? errorText,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          errorText: errorText,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          suffixIcon: suffixIcon,
+        ),
+        obscureText: obscureText,
       ),
     );
   }
